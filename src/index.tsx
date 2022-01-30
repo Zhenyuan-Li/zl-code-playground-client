@@ -36,6 +36,11 @@ function App() {
       bundle: true,
       write: false,
       plugins: [unpkgPathPlugin()],
+      // use this param for the .env constant
+      define: {
+        'process.env.NODE_ENV': '"production"',
+        global: 'window',
+      },
     });
 
     setCode(result.outputFiles[0].text);
