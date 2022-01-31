@@ -2,6 +2,7 @@ import * as esbuild from 'esbuild-wasm';
 import { useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { unpkgPathPlugin } from './plugins/unpkg-path-plugin';
+import { fetchPlugin } from './plugins/fetch-plugin';
 
 function App() {
   const [input, setInput] = useState('');
@@ -35,7 +36,7 @@ function App() {
       entryPoints: ['index.js'],
       bundle: true,
       write: false,
-      plugins: [unpkgPathPlugin()],
+      plugins: [unpkgPathPlugin(), fetchPlugin(input)],
       // use this param for the .env constant
       define: {
         'process.env.NODE_ENV': '"production"',
