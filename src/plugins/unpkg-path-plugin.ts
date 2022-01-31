@@ -2,6 +2,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import * as esbuild from 'esbuild-wasm';
+import localForage from 'localforage';
+
+// Because localStorage only store the string
+const fileCache = localForage.createInstance({
+  name: 'filecache',
+});
+
+// // Usage of indexedDB with localForage,(stored in key-value pair). Database can be seen in Application
+// // The syntax is defining a self-invoking function (()=>{})()
+// (async () => {
+//   await fileCache.setItem('color', 'red');
+
+//   const color = await fileCache.getItem('color');
+//   console.log(color);
+// })();
 
 export const unpkgPathPlugin = () => ({
   name: 'unpkg-path-plugin',
@@ -40,12 +55,12 @@ export const unpkgPathPlugin = () => ({
       };
     });
 
-    // Hijack the esbuild, if it want to search index.js in file system, instead we load them for it.
     // 2. Attempt to load up the index.js file
     // 4. Attempt to load that file up
     build.onLoad({ filter: /.*/ }, async (args: any) => {
       console.log('onLoad', args);
 
+      // Hijack the esbuild, if it want to search index.js in file system, instead we load them for it.
       if (args.path === 'index.js') {
         return {
           loader: 'jsx',
@@ -57,14 +72,24 @@ export const unpkgPathPlugin = () => ({
           `,
         };
       }
+
+      const cachedResult = await fileCache.getItem<esbuild.OnLoadResult>(
+        args.path
+      );
+      if (cachedResult) {
+        return cachedResult;
+      }
+
       const { data, request } = await axios.get(args.path);
-      // console.log(request);
-      // console.log(data);
-      return {
+
+      const result: esbuild.OnLoadResult = {
         loader: 'jsx',
         contents: data,
         resolveDir: new URL('./', request.responseURL).pathname,
       };
+      await fileCache.setItem(args.path, result);
+
+      return result;
     });
   },
 });
