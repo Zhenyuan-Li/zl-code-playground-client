@@ -6,7 +6,6 @@ import { fetchPlugin } from './plugins/fetch-plugin';
 
 function App() {
   const [input, setInput] = useState('');
-  const [code, setCode] = useState('');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ref = useRef<any>();
   const iframe = useRef<any>();
@@ -18,6 +17,30 @@ function App() {
     });
   };
 
+  const html = `
+  <html>
+  <head></head>
+  <body>
+    <div id="root"></div>
+    <script>
+    window.addEventListener(
+      'message',
+      (event) => {
+        try {
+          eval(event.data);
+        } catch (err) {
+          const root = document.querySelector('#root');
+          root.innerHTML = '<div style="color: red;"><h4>Runtime Error</h4>' + err + '</div>';
+          console.error(err);
+        }
+      },
+      false
+    );
+  </script>
+  </body>
+</html>
+  `;
+
   // using UNPKG to find all the direct index file for the target packaging
 
   useEffect(() => {
@@ -28,6 +51,9 @@ function App() {
     if (!ref.current) {
       return;
     }
+    // reset the iframe after one run
+    iframe.current.srcdoc = html;
+
     // // step 1: transpile the code
     // const result = await ref.current.transform(input, {
     //   loader: 'jsx',
@@ -53,23 +79,6 @@ function App() {
   // Problem 1: the code could be extremely large and will have hard time to print in some browser
   // Problem 2: in iframe: some code is in script, but some are in body. etc import ReactDOM.
   // because some script tag in source code cut flow. console.log('<script></script>')
-  const html = `
-  <html>
-  <head></head>
-  <body>
-    <div id="root"></div>
-    <script>
-    window.addEventListener(
-      'message',
-      (event) => {
-        eval(event.data);
-      },
-      false
-    );
-  </script>
-  </body>
-</html>
-  `;
 
   return (
     <div>
