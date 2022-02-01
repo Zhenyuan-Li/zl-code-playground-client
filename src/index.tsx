@@ -7,7 +7,9 @@ import { fetchPlugin } from './plugins/fetch-plugin';
 function App() {
   const [input, setInput] = useState('');
   const [code, setCode] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ref = useRef<any>();
+  const iframe = useRef<any>();
 
   const startService = async () => {
     ref.current = await esbuild.startService({
@@ -44,8 +46,30 @@ function App() {
       },
     });
 
-    setCode(result.outputFiles[0].text);
+    // setCode(result.outputFiles[0].text);
+    iframe.current.contentWindow.postMessage(result.outputFiles[0].text, '*');
   };
+
+  // Problem 1: the code could be extremely large and will have hard time to print in some browser
+  // Problem 2: in iframe: some code is in script, but some are in body. etc import ReactDOM.
+  // because some script tag in source code cut flow. console.log('<script></script>')
+  const html = `
+  <html>
+  <head></head>
+  <body>
+    <div id="root"></div>
+    <script>
+    window.addEventListener(
+      'message',
+      (event) => {
+        eval(event.data);
+      },
+      false
+    );
+  </script>
+  </body>
+</html>
+  `;
 
   return (
     <div>
@@ -55,7 +79,14 @@ function App() {
           Submit
         </button>
       </div>
-      <pre>{code}</pre>
+      {/* Embedding one child doc to display in one parent doc */}
+      {/* To disallow cross-frame access iframe content should be loaded from a different domain or port */}
+      <iframe
+        ref={iframe}
+        sandbox="allow-scripts"
+        srcDoc={html}
+        title="test html doc"
+      />
     </div>
   );
 }
