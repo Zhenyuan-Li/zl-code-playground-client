@@ -1,12 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as esbuild from 'esbuild-wasm';
 import { useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
+
+import CodeEditor from './components/code-editor';
 import { unpkgPathPlugin } from './plugins/unpkg-path-plugin';
 import { fetchPlugin } from './plugins/fetch-plugin';
 
-function App() {
+const App = () => {
   const [input, setInput] = useState('');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ref = useRef<any>();
   const iframe = useRef<any>();
 
@@ -82,6 +84,10 @@ function App() {
 
   return (
     <div>
+      <CodeEditor
+        initialValue="const a =1;"
+        onChange={(value) => setInput(value)}
+      />
       <textarea value={input} onChange={(e) => setInput(e.target.value)} />
       <div>
         <button onClick={transpileHandler} type="button">
@@ -98,6 +104,6 @@ function App() {
       />
     </div>
   );
-}
+};
 
 ReactDOM.render(<App />, document.querySelector('#root'));
