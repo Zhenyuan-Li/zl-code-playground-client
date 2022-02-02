@@ -7,11 +7,12 @@ import ReactDOM from 'react-dom';
 import CodeEditor from './components/code-editor';
 import { unpkgPathPlugin } from './plugins/unpkg-path-plugin';
 import { fetchPlugin } from './plugins/fetch-plugin';
+import Preview from './components/preview';
 
 const App = () => {
   const [input, setInput] = useState('');
+  const [code, setCode] = useState('');
   const ref = useRef<any>();
-  const iframe = useRef<any>();
 
   const startService = async () => {
     ref.current = await esbuild.startService({
@@ -19,32 +20,6 @@ const App = () => {
       wasmURL: 'https://unpkg.com/esbuild-wasm@0.8.27/esbuild.wasm',
     });
   };
-
-  const html = `
-  <html>
-  <head></head>
-  <body>
-    <div id="root"></div>
-    <script>
-    window.addEventListener(
-      'message',
-      (event) => {
-        try {
-          eval(event.data);
-        } catch (err) {
-          const root = document.querySelector('#root');
-          root.innerHTML = '<div style="color: red;"><h4>Runtime Error</h4>' + err + '</div>';
-          console.error(err);
-        }
-      },
-      false
-    );
-  </script>
-  </body>
-</html>
-  `;
-
-  // using UNPKG to find all the direct index file for the target packaging
 
   useEffect(() => {
     startService();
@@ -54,8 +29,6 @@ const App = () => {
     if (!ref.current) {
       return;
     }
-    // reset the iframe after one run
-    iframe.current.srcdoc = html;
 
     // // step 1: transpile the code
     // const result = await ref.current.transform(input, {
@@ -75,34 +48,24 @@ const App = () => {
       },
     });
 
-    // setCode(result.outputFiles[0].text);
-    iframe.current.contentWindow.postMessage(result.outputFiles[0].text, '*');
+    setCode(result.outputFiles[0].text);
   };
 
   // Problem 1: the code could be extremely large and will have hard time to print in some browser
   // Problem 2: in iframe: some code is in script, but some are in body. etc import ReactDOM.
   // because some script tag in source code cut flow. console.log('<script></script>')
-
   return (
     <div>
       <CodeEditor
         initialValue="const a =1;"
         onChange={(value) => setInput(value)}
       />
-      <textarea value={input} onChange={(e) => setInput(e.target.value)} />
       <div>
         <button onClick={transpileHandler} type="button">
           Submit
         </button>
       </div>
-      {/* Embedding one child doc to display in one parent doc */}
-      {/* To disallow cross-frame access iframe content should be loaded from a different domain or port */}
-      <iframe
-        ref={iframe}
-        sandbox="allow-scripts"
-        srcDoc={html}
-        title="test html doc"
-      />
+      <Preview code={code} />
     </div>
   );
 };
