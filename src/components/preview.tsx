@@ -4,6 +4,9 @@ interface PreviewProps {
   code: string;
 }
 
+// Problem 1: the code could be extremely large and will have hard time to print in some browser
+// Problem 2: in iframe: some code is in script, but some are in body. etc import ReactDOM.
+// because some script tag in source code cut flow. console.log('<script></script>')
 const html = `
 <html>
 <head></head>
@@ -29,6 +32,7 @@ const html = `
 `;
 
 const Preview: React.FC<PreviewProps> = ({ code }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const iframe = useRef<any>();
   useEffect(() => {
     // reset the iframe after one run
