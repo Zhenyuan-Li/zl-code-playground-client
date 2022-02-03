@@ -11,7 +11,9 @@ interface PreviewProps {
 // because some script tag in source code cut flow. console.log('<script></script>')
 const html = `
 <html>
-<head></head>
+<head>
+  <style>html {background-color: white;}</style>
+</head>
 <body>
   <div id="root"></div>
   <script>
