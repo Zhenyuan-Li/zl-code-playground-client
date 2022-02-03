@@ -1,5 +1,7 @@
 import { useRef, useEffect } from 'react';
 
+import './preview.css';
+
 interface PreviewProps {
   code: string;
 }
@@ -43,12 +45,14 @@ const Preview: React.FC<PreviewProps> = ({ code }) => {
   // Embedding one child doc to display in one parent doc
   // To disallow cross-frame access iframe content should be loaded from a different domain or port
   return (
-    <iframe
-      ref={iframe}
-      sandbox="allow-scripts"
-      srcDoc={html}
-      title="preview"
-    />
+    <div className="preview-wrapper">
+      <iframe
+        ref={iframe}
+        sandbox="allow-scripts"
+        srcDoc={html}
+        title="preview"
+      />
+    </div>
   );
 };
 
