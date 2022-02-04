@@ -58,7 +58,6 @@ module.exports = {
     ],
     'react/jsx-props-no-spreading': 'off',
   },
-  'no-shadow': ['error', { allow: ['ActionType'] }],
   settings: {
     'import/resolver': {
       node: {

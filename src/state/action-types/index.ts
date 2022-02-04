@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-shadow
 export enum ActionType {
   MOVE_CELL = 'move_cell',
   DELETE_CELL = 'delete_cell',
