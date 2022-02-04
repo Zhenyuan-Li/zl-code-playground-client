@@ -15,6 +15,7 @@ const Resizable: React.FC<ResizableProps> = ({ direction, children }) => {
 
   useEffect(() => {
     // debouncing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let timer: any;
     const listener = () => {
       if (timer) {
