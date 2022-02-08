@@ -15,7 +15,6 @@ interface CodeCellProps {
 const CodeCell: React.FC<CodeCellProps> = ({ cell }) => {
   const { updateCell, createBundle } = useActions();
   const bundle = useTypedSelector((state) => state.bundles[cell.id]);
-  console.log(bundle);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -25,8 +24,9 @@ const CodeCell: React.FC<CodeCellProps> = ({ cell }) => {
     return () => {
       clearTimeout(timer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cell.content, cell.id]);
+    // If add createBundle directly, there will be a infinite loop: because the use-action hooks
+    // (it bind all action and provide a different a action version)
+  }, [cell.content, cell.id, createBundle]);
 
   return (
     <Resizable direction="vertical">
@@ -43,7 +43,7 @@ const CodeCell: React.FC<CodeCellProps> = ({ cell }) => {
             onChange={(value) => updateCell(cell.id, value)}
           />
         </Resizable>
-        {/* <Preview code={bu} bundlingStatus={error} /> */}
+        {bundle && <Preview code={bundle.code} bundlingStatus={bundle.err} />}
       </div>
     </Resizable>
   );
