@@ -16,15 +16,27 @@ interface CodeCellProps {
 const CodeCell: React.FC<CodeCellProps> = ({ cell }) => {
   const { updateCell, createBundle } = useActions();
   const bundle = useTypedSelector((state) => state.bundles[cell.id]);
+  const cumulativeCode = useTypedSelector((state) => {
+    const { data, order } = state.cells;
+    const orderedCells = order.map((id) => data[id]);
+    const cumCodes: string[] = [];
+    orderedCells.some((c) => {
+      if (c.type === 'code') {
+        cumCodes.push(c.content);
+      }
+      return c.id === cell.id;
+    });
+    return cumCodes;
+  });
 
   useEffect(() => {
     if (!bundle) {
-      createBundle(cell.id, cell.content);
+      createBundle(cell.id, cumulativeCode.join('\n'));
       return;
     }
 
     const timer = setTimeout(async () => {
-      createBundle(cell.id, cell.content);
+      createBundle(cell.id, cumulativeCode.join('\n'));
     }, 1000);
 
     // eslint-disable-next-line consistent-return
@@ -34,7 +46,7 @@ const CodeCell: React.FC<CodeCellProps> = ({ cell }) => {
     // If add createBundle directly, there will be a infinite loop: because the use-action hooks
     // (it bind all action and provide a different a action version)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cell.content, cell.id, createBundle]);
+  }, [cumulativeCode.join('\n'), cell.id, createBundle]);
 
   return (
     <Resizable direction="vertical">
