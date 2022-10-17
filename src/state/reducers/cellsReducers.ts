@@ -4,6 +4,7 @@ import produce from 'immer';
 import { Cell } from '../cell';
 import { ActionType } from '../action-types';
 import { Action } from '../actions';
+import { defaultCells } from '../../assets/notes';
 
 interface CellsState {
   loading: boolean;
@@ -17,8 +18,11 @@ interface CellsState {
 const initialState: CellsState = {
   loading: false,
   error: null,
-  order: [],
-  data: {},
+  order: defaultCells.map(({ id }) => id),
+  data: defaultCells.reduce((acc, initialCell) => {
+    acc[initialCell.id] = initialCell;
+    return acc;
+  }, {} as CellsState['data']),
 };
 
 const randomId = () => Math.random().toString(36).substring(2, 5);
