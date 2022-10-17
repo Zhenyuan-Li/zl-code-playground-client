@@ -1,35 +1,25 @@
-import React, { useRef } from 'react';
-import MonacoEditor, { EditorDidMount } from '@monaco-editor/react';
+import React from 'react';
+import MonacoEditor from '@monaco-editor/react';
+
 import prettier from 'prettier';
 import parser from 'prettier/parser-babel';
 
 import './code-editor.css';
 
 interface CodeEditorProps {
-  initialValue: string;
+  value: string;
   onChange(value: string): void;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, onChange }) => {
-  const editorRef = useRef<any>();
-  // This will be executed when the editor is first rendered on the screen
-  // getValue() will return the current code in the editor.
-  const onEditorDidMount: EditorDidMount = (getValue, monacoEditor) => {
-    editorRef.current = monacoEditor;
-    // To detect the change of content.
-    monacoEditor.onDidChangeModelContent(() => {
-      onChange(getValue());
-    });
-    // Change the tab size to 2
-    monacoEditor.getModel()?.updateOptions({ tabSize: 2 });
-  };
+const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange }) => {
+  const onEditorChange = (code: string | undefined) => onChange(code || '');
 
   const onFormatClick = () => {
     // get current value from editor
     // format that value, set value back in the editor
-    const unformatted = editorRef.current.getModel().getValue();
+    // const unformatted = editorRef.current.getModel().getValue();
     const formatted = prettier
-      .format(unformatted, {
+      .format(value, {
         parser: 'babel',
         plugins: [parser],
         useTabs: false,
@@ -37,7 +27,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, onChange }) => {
         singleQuote: true,
       })
       .replace(/\n$/, '');
-    editorRef.current.setValue(formatted);
+    onChange(formatted);
   };
 
   // To use the type support, add monaco-editor and check the doc
@@ -51,9 +41,9 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, onChange }) => {
         Format
       </button>
       <MonacoEditor
-        editorDidMount={onEditorDidMount}
-        value={initialValue}
-        theme="dark"
+        onChange={onEditorChange}
+        value={value}
+        theme="vs-dark"
         height="100%"
         language="javascript"
         options={{
@@ -65,6 +55,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, onChange }) => {
           fontSize: 16,
           scrollBeyondLastLine: false,
           automaticLayout: true,
+          tabSize: 2,
         }}
       />
     </div>
